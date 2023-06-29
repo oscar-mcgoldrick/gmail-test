@@ -1,10 +1,17 @@
+import { Outlet } from "react-router-dom"
+import { sendBeep } from "../apis/beep"
+
 function App() {
+
+  async function handleBeep() {
+    const url = await sendBeep()
+    console.log(url)
+    window.location.href = url
+  }
   return (
     <>
-      <header className="header">
-        <h1>My Collection</h1>
-      </header>
-      <section className="main">{/* add your code here */}</section>
+      <button onClick={handleBeep}>beep</button>
+      <Outlet />
     </>
   )
 }
