@@ -20,11 +20,12 @@ export function getAuthURL() {
 
 export async function getToken(code) {
   let {tokens} = await oauth2Client.getToken(code)
-  console.log('utils', tokens)
   oauth2Client.setCredentials(tokens)
 
-  console.log(await getMessagesByThread())
-  console.log(await getMessageContent('18289f8d58e2a1ac'))
+  console.log(await getMail())
+  console.log('ONE',await getMessageContent('18289f8d58e2a1ac'))
+  console.log('TWO',await getMessageContent('1890eceaf37b3fc7'))
+  console.log('THREE',await getMessageContent('189043d6d440232f'))
 }
 
 export async function sendMail() {
@@ -65,7 +66,7 @@ export async function getMail() {
   const res = await gmail.users.messages.list({
     userId: 'me',
     labelIds: ['INBOX'],
-    maxResults: 10, // You can modify this value to retrieve more or fewer messages
+    maxResults: 50, // You can modify this value to retrieve more or fewer messages
   });
 
   const messages = res.data.messages;
@@ -81,10 +82,10 @@ export async function getMessageContent(messageId: string) {
   });
 
   const message = res.data;
-  const body = message.payload.parts[0].parts[0].parts[0].body.data
-  const decodedBody = Buffer.from(body, 'base64').toString('utf-8');
+  const body = message.payload
+  // const decodedBody = Buffer.from(body, 'base64').toString('utf-8');
 
-  return decodedBody;
+  return body;
 }
 
 export async function getProfile() {

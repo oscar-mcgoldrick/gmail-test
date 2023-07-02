@@ -11,12 +11,10 @@ const router = express.Router()
 
 router.get('/', async (req, res, next) => {
   const redirect = await getAuthURL()
-  console.log(redirect)
   res.send(redirect)
 })
 
 router.post('/', async (req, res) => {
-  console.log(req.body.code)
   getToken(req.body.code)
 })
 
