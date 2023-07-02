@@ -11,7 +11,6 @@ export const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route path='/auth' element={<AuthLanding />} />
-      <Route path='/auth:authCode' element={<AuthLanding2 />} />
     </Route>
   )
 )

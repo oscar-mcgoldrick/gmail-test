@@ -6,7 +6,7 @@ const oauth2Client = new google.auth.OAuth2(
   "http://localhost:5173/auth"
 );
 
-function getAuthURL() {
+export function getAuthURL() {
  return oauth2Client.generateAuthUrl({
   // 'online' (default) or 'offline' (gets refresh_token)
   access_type: 'offline',
@@ -18,5 +18,9 @@ function getAuthURL() {
 })
 }
 
+export async function getToken(code) {
+  let {tokens} = await oauth2Client.getToken(code)
+  console.log('utils', tokens)
+  oauth2Client.setCredentials(tokens)
+}
 
-export default getAuthURL
