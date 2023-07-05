@@ -1,4 +1,5 @@
 const {google} = require('googleapis');
+// import { Email } from "../../models/google";
 
 const oauth2Client = new google.auth.OAuth2(
   "607422315781-dlrhdddnoefbe9o5h6725p57oj951o24.apps.googleusercontent.com",
@@ -23,23 +24,24 @@ export async function getToken(code) {
   oauth2Client.setCredentials(tokens)
 
   console.log(await getMail())
-  console.log('ONE',await getMessageContent('18289f8d58e2a1ac'))
-  console.log('TWO',await getMessageContent('1890eceaf37b3fc7'))
-  console.log('THREE',await getMessageContent('189043d6d440232f'))
+  // console.log(await getMessagesByThread('1891593d4c7bb4e9'))
+  console.log(await getMessagesByThread('1890939e20501d5c'))
+  // console.log('ONE',await getMessageContent('18909c5cd7bdf8c8'))
+  // console.log('ONE',await getMessageContent('18908fb1eaa720a7'))
+  // console.log(tokens)
 }
 
-export async function sendMail() {
-  const subject = 'Parking Ticket Test';
+export async function sendMail(email: Email) {
+  const subject = `Ticket Number ${email.infringementNo} Dispute`;
   const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
   const messageParts = [
-    'From: Oscar McGoldrick <oscar.mcgoldrick99@gmail.com>',
-    'To: Oscar McGoldrick <oscar.mcgoldrick99@gmail.com>',
+    `From: ${email.firstName} ${email.lastName} <${email.email}>`,
+    `To: Oscar McGoldrick <${email.recipient}>`,
     'Content-Type: text/html; charset=utf-8',
     'MIME-Version: 1.0',
     `Subject: ${utf8Subject}`,
     '',
-    'This is a message just to say hello.',
-    'So... <b>Hello!</b>  🤘❤️😎',
+    `${email.message}`
   ];
   const message = messageParts.join('\n');
 
@@ -81,11 +83,33 @@ export async function getMessageContent(messageId: string) {
     id: messageId,
   });
 
-  const message = res.data;
-  const body = message.payload
-  // const decodedBody = Buffer.from(body, 'base64').toString('utf-8');
+  const message = res.data
+  const partsArr = message.payload.parts
+  
+  const textBody = findTextBody(partsArr[0])
 
-  return body;
+  return textBody;
+}
+
+export function findTextBody(payload) {
+  if (payload.mimeType === 'text/plain') {
+    return payload.body.data ? decodeBase64(payload.body.data) : '';
+  }
+
+  if (payload.mimeType === 'multipart/alternative' && payload.parts) {
+    for (const part of payload.parts) {
+      const body = findTextBody(part);
+      if (body !== '') {
+        return body
+      }
+    }
+  }
+  return ''
+}
+
+export function decodeBase64(encodedString) {
+  const decodedString = Buffer.from(encodedString, 'base64').toString('utf-8');
+  return decodedString;
 }
 
 export async function getProfile() {
@@ -96,12 +120,17 @@ export async function getProfile() {
     return profile
 }
 
-export async function getMessagesByThread() {
+export async function getMessagesByThread(threadId: string) {
   const gmail = google.gmail({version: 'v1', auth: oauth2Client})
-  const messages = await gmail.users.messages.list({
+  const messages = await gmail.users.threads.get({
     userId: 'me',
-    q: `from:Jessica.Dickson@ccc.govt.nz`
+    id: '18918773662fbcbe'
   })
 
-  return messages.data.messages[0]
+  const messagePartArr = messages.data.messages
+  const messagesBody = messagePartArr.map((message) => {
+    return findTextBody(message.payload)
+  })
+
+  return messagesBody
 }
